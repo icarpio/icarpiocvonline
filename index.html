@@ -476,26 +476,50 @@
 			};
 			
 			try {
-				const response = await fetch('https://albertaapi.onrender.com/cv/contact/', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify(data)
-				});
+	console.log("Enviando datos:", data);
 
-				const result = await response.json();
+	const response = await fetch('https://albertaapi.onrender.com/cv/contact/', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify(data)
+	});
 
-				if (response.ok && result.success) {
-					showResponse("✅ Mensaje enviado correctamente.", "success");
-					document.getElementById('contact-form').reset();
-				} else {
-					showResponse("❌ Error al enviar el mensaje:\n" + formatErrors(result.errors), "danger");
-				}
-			} catch (error) {
-				showResponse("❌ Error inesperado al enviar el formulario.", "danger");
-				console.error(error);
-			}
+	// Si el servidor responde con 204 No Content, se asume éxito sin JSON
+	if (response.status === 204) {
+		showResponse("✅ Mensaje enviado correctamente.", "success");
+		document.getElementById('contact-form').reset();
+		return;
+	}
+
+	// Intentamos obtener la respuesta como texto
+	const text = await response.text();
+	let result;
+
+	try {
+		result = JSON.parse(text); // Intentamos convertir el texto a JSON
+	} catch (jsonError) {
+		console.error("❌ Error al interpretar respuesta como JSON:");
+		console.error("Respuesta cruda:", text);
+		console.error(jsonError);
+		showResponse("❌ El servidor respondió con un formato inesperado.", "danger");
+		return;
+	}
+
+	console.log("Respuesta del servidor:", result);
+
+	if (response.ok && result.success) {
+		showResponse("✅ Mensaje enviado correctamente.", "success");
+		document.getElementById('contact-form').reset();
+	} else {
+		showResponse("❌ Error al enviar el mensaje:\n" + formatErrors(result.errors), "danger");
+	}
+} catch (error) {
+	showResponse("❌ Error inesperado al enviar el formulario.", "danger");
+	console.error(error);
+}
+
 		});
 
 		function showResponse(message, type) {
