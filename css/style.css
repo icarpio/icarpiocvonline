@@ -957,6 +957,7 @@ h1, h2, h3, h4, h5, h6, figure {
   -webkit-flex-wrap: wrap;
   -moz-flex-wrap: wrap;
 }
+
 @media screen and (max-width: 768px) {
   #fh5co-consult .video {
     display: none;
